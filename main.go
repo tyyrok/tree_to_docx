@@ -98,7 +98,7 @@ func recursiveSyncFileParser(dir string) map[string]any {
 }
 
 func printTreeStructure(prefix string, tree map[string]any) {
-	p := prefix + "|--"
+	p := prefix + "|---"
 	
 	for k, v := range tree {
 		fmt.Printf("%s%s\n", p, k)
@@ -127,7 +127,7 @@ func saveStructureToDocx(tree *map[string]any) {
 }
 
 func addTreeStructure(prefix string, tree *map[string]any, d *document.Document) {
-	p := prefix + "|--"
+	p := prefix + "|---"
 	
 	for k, v := range *tree {
 		s := fmt.Sprintf("%s%s\n", p, k)
