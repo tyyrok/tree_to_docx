@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"baliance.com/gooxml/document"
+	"baliance.com/gooxml/schema/soo/wml"
 )
 
 type TreeStorage struct {
@@ -23,15 +24,6 @@ func (t *TreeStorage) addElem(key string, value any) {
 
 
 func main() {
-	/*
-	var flag string
-	if len(os.Args) > 0 {
-		flag = os.Args[1]
-	} else {
-		flag = ""
-	}
-	fmt.Println(flag)
-	*/
 	var wg sync.WaitGroup
 	dir, err := os.Getwd()
 	if err != nil {
@@ -44,7 +36,7 @@ func main() {
 	files, _ := os.ReadDir(dir)
 	for _, file := range files {
 		fpath := filepath.Join(dir, file.Name())
-		if strings.HasPrefix(file.Name(), ".") || file.Name() == "structure.docx" {
+		if strings.HasPrefix(file.Name(), ".") || file.Name() == "structure.docx" || strings.HasSuffix(file.Name(), ".exe") {
 			continue
 		}
 		if file.IsDir() {
@@ -67,13 +59,12 @@ func recursiveFileParser(dir string, wg *sync.WaitGroup, storage *TreeStorage) {
 	files, _ := os.ReadDir(dir)
 	res := map[string]any{}
 	for _, file := range files {
-		if strings.HasPrefix(file.Name(), ".") {
+		if strings.HasPrefix(file.Name(), ".") || strings.HasSuffix(file.Name(), ".exe") {
 			continue
 		}
 		fpath := filepath.Join(dir, file.Name())
 		if file.IsDir() {
-			res := recursiveSyncFileParser(fpath)
-			res[file.Name()] = res
+			res[file.Name()] = recursiveSyncFileParser(fpath)
 			continue
 		}
 		b, err := os.ReadFile(fpath)
@@ -125,9 +116,12 @@ func saveStructureToDocx(tree *map[string]any) {
 	para.SetStyle("Title")
 	run.AddText("Files Tree Structure")
 	addTreeStructure("", tree, doc)
+
+	doc.AddParagraph().Properties().AddSection(wml.ST_SectionMarkNextPage)
+
 	para = doc.AddParagraph()
 	para.SetStyle("Title")
-	run.AddText("Files Content")
+	para.AddRun().AddText("Files Content")
 	addFilesContent("", tree, doc)
 	doc.SaveToFile("structure.docx")
 }
